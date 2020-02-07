@@ -53,7 +53,7 @@ func GetLibraryComics(c *gin.Context) {
 
 	c.Header("Content-Type", "application/json")
 
-	comics := comicsRepository.GetLibraryComics()
+	comics := comicsRepository.GetRepLibraryComics
 
 	c.JSON(200, comics)
 }

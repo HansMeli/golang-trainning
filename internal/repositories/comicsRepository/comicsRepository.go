@@ -10,8 +10,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-// GetLibraryComics get the comics data from database
-func GetLibraryComics(w http.ResponseWriter) []comic.Comic {
+// GetRepLibraryComics get the comics data from database
+func GetRepLibraryComics(w http.ResponseWriter) []comic.Comic {
 	// we created Comics array
 	var res []comic.Comic
 
