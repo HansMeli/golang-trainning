@@ -17,7 +17,7 @@ import (
 )
 
 // GetAllComics return all the available comics from marvel page
-func GetAllComics(c *gin.Context) {
+func GetAllComics() comic.Data {
 
 	err := godotenv.Load()
 	if err != nil {
@@ -45,7 +45,7 @@ func GetAllComics(c *gin.Context) {
 	var responseObject comic.Response
 	json.Unmarshal(responseData, &responseObject)
 
-	c.JSON(200, responseObject.Data)
+	return responseObject.Data
 }
 
 // GetLibraryComics return all the available comics in the library
@@ -56,4 +56,14 @@ func GetLibraryComics(c *gin.Context) {
 	comics := comicsRepository.GetRepLibraryComics
 
 	c.JSON(200, comics)
+}
+
+// UpdateComicsLibrary uopdate each period of time the comics library database
+func UpdateComicsLibrary() string {
+
+	listComics := GetAllComics()
+
+	response := comicsRepository.UpdateDatabaseFromMarvel(listComics)
+
+	return response
 }

@@ -2,13 +2,17 @@ package comicsrepository
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	database "github.com/golang-trainning/internal/database"
 	comic "github.com/golang-trainning/internal/models"
 	"go.mongodb.org/mongo-driver/bson"
 )
+
+// GET SECTION
 
 // GetRepLibraryComics get the comics data from database
 func GetRepLibraryComics(w http.ResponseWriter) []comic.Comic {
@@ -45,4 +49,42 @@ func GetRepLibraryComics(w http.ResponseWriter) []comic.Comic {
 	}
 
 	return res
+}
+
+// SET SECTION
+
+// UpdateDatabaseFromMarvel the comics data from database
+func UpdateDatabaseFromMarvel(j comic.Data) string {
+
+	//Connection mongoDB with database class
+	collection := database.ConnectDB()
+
+	var msj string = ""
+
+	for k, v := range j.Results {
+
+		res, errSearch := collection.CountDocuments(context.TODO(), bson.D{{"id", v.ID}})
+
+		if errSearch != nil {
+			fmt.Printf("insert fail #%d %v\n", k, errSearch)
+			os.Exit(1)
+		} else {
+			if res == 0 {
+				// bson.M{},  we passed empty filter. So we want to get all data.
+				_, errInsert := collection.InsertOne(context.Background(), v)
+				if errInsert != nil {
+					fmt.Printf("insert fail #%d %v\n", k, errInsert)
+					os.Exit(1)
+				}
+				msj = "La base de datos fue actualizada"
+			} else {
+				msj = "Todo al dia"
+				break
+			}
+
+		}
+
+	}
+
+	return msj
 }

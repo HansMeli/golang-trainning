@@ -1,6 +1,10 @@
 package models
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"math/rand"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 // Response struct to map the Entire Response
 type Response struct {
@@ -30,6 +34,10 @@ type Comic struct {
 	Stock       int                `json:"stock,omitempty" bson:"stock,omitempty"`
 }
 
-func setStock() string {
-	return "stock seted"
+func setStock() {
+	min := 1
+	max := 10
+	var comic Comic
+
+	comic.Stock = rand.Intn(max-min) + min
 }
