@@ -2,18 +2,21 @@ package comicsrepository
 
 import (
 	"context"
+	"fmt"
 	"log"
-	"net/http"
+	"os"
 
 	database "github.com/golang-trainning/internal/database"
-	comic "github.com/golang-trainning/internal/models"
+	comicModel "github.com/golang-trainning/internal/models"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-// GetLibraryComics get the comics data from database
-func GetLibraryComics(w http.ResponseWriter) []comic.Comic {
+// GET SECTION
+
+// GetRepLibraryComics get the comics data from database
+func GetRepLibraryComics() []comicModel.Comic {
 	// we created Comics array
-	var res []comic.Comic
+	comic := comicModel.New()
 
 	//Connection mongoDB with database class
 	collection := database.ConnectDB()
@@ -22,7 +25,8 @@ func GetLibraryComics(w http.ResponseWriter) []comic.Comic {
 	cur, err := collection.Find(context.TODO(), bson.M{})
 
 	if err != nil {
-		database.GetError(err, w)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	// Close the cursor once finished
@@ -33,16 +37,57 @@ func GetLibraryComics(w http.ResponseWriter) []comic.Comic {
 	for cur.Next(context.TODO()) {
 
 		// create a value into which the single document can be decoded
-		var comic comic.Comic
+		var item comicModel.Comic
 		// & character returns the memory address of the following variable.
-		err := cur.Decode(&comic) // decode similar to deserialize process.
+		err := cur.Decode(&item) // decode similar to deserialize process.
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		// add item our array
-		res = append(res, comic)
+
+		comic.Add(item)
 	}
 
-	return res
+	return comic.GetAll()
+}
+
+// SET SECTION
+
+// UpdateDatabaseFromMarvel the comics data from database
+func UpdateDatabaseFromMarvel(j comicModel.Data) int {
+
+	//Connection mongoDB with database class
+	collection := database.ConnectDB()
+
+	var count int = 0
+
+	for k, v := range j.Results {
+
+		res, errSearch := collection.CountDocuments(context.TODO(), bson.D{{"idMarvel", v.ID}})
+
+		if errSearch != nil {
+			fmt.Printf("find fail #%d %v\n", k, errSearch)
+			os.Exit(1)
+		} else {
+			if res == 0 {
+				var comic comicModel.Comic
+
+				comic.IDMarvel = v.ID
+				comic.Title = v.Title
+				comic.Description = v.Description
+				comic.SetStock()
+
+				// bson.M{},  we passed empty filter. So we want to get all data.
+				_, errInsert := collection.InsertOne(context.Background(), comic)
+				if errInsert != nil {
+					fmt.Printf("insert fail #%d %v\n", k, errInsert)
+					os.Exit(1)
+				}
+				count++
+			}
+		}
+	}
+
+	return count
 }

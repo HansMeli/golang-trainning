@@ -3,3 +3,5 @@ logs/
 vendor/
 Gopkg.lock
 Gopkg.toml
+.vscode
+internal/init/.env
