@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -9,18 +10,33 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func performRequest(r http.Handler, method, path string) *httptest.ResponseRecorder {
+	req, _ := http.NewRequest(method, path, nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	return w
+}
+
 // TestLibrary test the url that return the library comics
 func TestLibrary(t *testing.T) {
-	handler := func(c *gin.Context) {
-		c.String(http.StatusOK, "bar")
-	}
+	// Build our expected body
+	// body := gin.H{
+	// 	"hello": "world",
+	// }
+	// Grab our router
+	router := gin.Default()
 
-	router := gin.New()
-	router.GET("/marvel/getAllComics", handler)
+	// Perform a GET request with that handler.
+	w := performRequest(router, "GET", "/library/getAllComics")
 
-	req, _ := http.NewRequest("GET", "/marvel/getAllComics", nil)
-	resp := httptest.NewRecorder()
-	router.ServeHTTP(resp, req)
+	// Assert we encoded correctly,
+	// the request gives a 200
+	assert.Equal(t, http.StatusOK, w.Code)
 
-	assert.Equal(t, resp.Body.String(), "bar")
+	// Convert the JSON response to a map
+	var response map[string]string
+	err := json.Unmarshal([]byte(w.Body.String()), &response)
+
+	// Make some assertions on the correctness of the response.
+	assert.Nil(t, err)
 }

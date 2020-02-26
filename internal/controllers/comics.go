@@ -53,7 +53,7 @@ func GetLibraryComics(c *gin.Context) {
 
 	c.Header("Content-Type", "application/json")
 
-	comics := comicsRepository.GetRepLibraryComics
+	comics := comicsRepository.GetRepLibraryComics()
 
 	c.JSON(200, comics)
 }
@@ -61,9 +61,17 @@ func GetLibraryComics(c *gin.Context) {
 // UpdateComicsLibrary uopdate each period of time the comics library database
 func UpdateComicsLibrary() string {
 
+	msj := ""
+
 	listComics := GetAllComics()
 
 	response := comicsRepository.UpdateDatabaseFromMarvel(listComics)
 
-	return response
+	if response > 0 {
+		msj = "Base de datos actualizada"
+	} else if response == 0 {
+		msj = "Todo al dia"
+	}
+
+	return msj
 }

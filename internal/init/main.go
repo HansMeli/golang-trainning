@@ -15,7 +15,7 @@ func doEvery(d time.Duration, f func(time.Time)) {
 	}
 }
 
-func updagteDatabase(t time.Time) {
+func updateDatabase(t time.Time) {
 	resUpdate := comics.UpdateComicsLibrary()
 	fmt.Printf(resUpdate, t)
 }
@@ -23,6 +23,9 @@ func updagteDatabase(t time.Time) {
 func main() {
 	r := gin.Default()
 	routes.Routes(r)
-	doEvery(60000*time.Millisecond, updagteDatabase)
+	r.GET("/sync_database", func(c *gin.Context) {
+		go doEvery(60000*time.Millisecond, updateDatabase)
+	})
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+
 }
